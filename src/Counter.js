@@ -10,6 +10,7 @@ export const Counter = () => {
     const minuteCounter = useRef(25);
     const [seconds, setSeconds] = useState(secondCounter.current);
     const [minutes, setMinutes] = useState(minuteCounter.current);
+    const [moreRestEnable, setMoreRestEnable] = useState(false);
     const interval = useRef(null);
     const restTimeRef = useRef(null);
     const studyTimeRef = useRef(null);
@@ -22,6 +23,7 @@ export const Counter = () => {
                         setStarted(false);
                         paused.current = false;
                         clearInterval(interval.current);
+                        return;
                     }
                     if(secondCounter.current === 0) {
                         secondCounter.current = 59;
@@ -36,15 +38,17 @@ export const Counter = () => {
                     if(secondCounter.current === 0 && minuteCounter.current === 0) {
                         countStudySessions.current > countRestSessions.current ? countRestSessions.current++ : countStudySessions.current++;
                         playSound();
-                        if(countStudySessions.current === 4) countStudySessions.current = 0;
+                        if(countStudySessions.current === 4) {
+                            setMoreRestEnable(true);
+                            countStudySessions.current = 0;
+                        }
                         if(countRestSessions.current === 4) countRestSessions.current = 0;
-                        secondCounter.current = 0;
-                        minuteCounter.current = countStudySessions.current > countRestSessions.current ? restTimeRef.current.value : studyTimeRef.current.value;
-                        setSeconds(secondCounter.current);
-                        setMinutes(minuteCounter.current);
-                        paused.current = true;
+                            secondCounter.current = 0;
+                            minuteCounter.current = countStudySessions.current > countRestSessions.current ? restTimeRef.current.value : studyTimeRef.current.value;
+                            setSeconds(secondCounter.current);
+                            setMinutes(minuteCounter.current);
+                            paused.current = true;
                     }
-
                 }, 1000);
             }
 
@@ -52,7 +56,7 @@ export const Counter = () => {
             if(started && !paused.current) {
                 countDown();
             }
-        //return () => clearInterval(interval.current);
+        
     },[started, paused.current])
 
 
@@ -89,8 +93,8 @@ export const Counter = () => {
 
 
     const disableStudyOptions = started || countStudySessions.current > countRestSessions.current;
-    const disableRestOptions = started || (countRestSessions.current === countStudySessions.current && countRestSessions.current !== 0);
-
+    const disableRestOptions = started || (countRestSessions.current === countStudySessions.current && countStudySessions.current !== 0);
+    console.log(countStudySessions.current, countRestSessions.current)
 
     return ( 
         <div>
@@ -104,13 +108,17 @@ export const Counter = () => {
             className="start-button"
         >
         Start</button>
+
         <button disabled={!started} onClick={() => paused.current = true} className="pause-button">Pause</button>
+
         <button className="reset-button" onClick={handleReset}>Reset</button>
+
         <br />
         <label className="study-label">Choose study time</label>
         <select disabled = {disableStudyOptions} onChange={handleChangeTime} ref={studyTimeRef}>
             {timeOptions}
         </select>
+
         <br />
         <label className="rest-label">Choose Rest Time</label>
         <select onChange={(e) => {
@@ -119,10 +127,11 @@ export const Counter = () => {
             }} 
             ref={restTimeRef} disabled={disableRestOptions}>
             <option value={5} key={5}>5</option>
-            <option disabled={countStudySessions.current !== 4} value={10} key={10}>10</option>
+            <option disabled={!moreRestEnable} value={10} key={10}>10</option>
         </select>
+
         <br />
-        <label className="session-count">Study {4-countStudySessions.current} more sessions to allow 10 minute rest option</label>
+        {moreRestEnable ? <label>you can Choose 10 minute option now</label> : <label className="session-count">Study {4-countStudySessions.current} more sessions to allow 10 minute rest option</label>}
         </div>
     );
 }
