@@ -53,24 +53,26 @@ export const Counter = () => {
             }
 
 
-            if(started && !paused.current) {
+            if(started) {
                 countDown();
             }
         
-    },[started, paused.current])
+    },[started])
 
 
     const handleChangeTime = (e) => {
-        minuteCounter.current = e.target.value
-        setMinutes(minuteCounter.current)
+        minuteCounter.current = e.target.value;
+        setMinutes(minuteCounter.current);
         secondCounter.current = 0;
-        setSeconds(secondCounter.current)
+        setSeconds(secondCounter.current);
     }
 
 
     const handleReset = () => {
         minuteCounter.current = 25;
         secondCounter.current = 0;
+        countRestSessions.current = 0;
+        countStudySessions.current = 0;
         setMinutes(minuteCounter.current);
         setSeconds(secondCounter.current);
         clearInterval(interval.current);
@@ -94,7 +96,6 @@ export const Counter = () => {
 
     const disableStudyOptions = started || countStudySessions.current > countRestSessions.current;
     const disableRestOptions = started || (countRestSessions.current === countStudySessions.current && countStudySessions.current !== 0);
-    console.log(countStudySessions.current, countRestSessions.current)
 
     return ( 
         <div>
@@ -102,7 +103,7 @@ export const Counter = () => {
         <button 
             disabled = {started}
             onClick={() => {
-            setStarted(true)
+            setStarted(true);
             paused.current = false;
             }} 
             className="start-button"
@@ -131,7 +132,7 @@ export const Counter = () => {
         </select>
 
         <br />
-        {moreRestEnable ? <label>you can Choose 10 minute option now</label> : <label className="session-count">Study {4-countStudySessions.current} more sessions to allow 10 minute rest option</label>}
+        {moreRestEnable ? <label className="more-rest">you can Choose 10 minute option now</label> : <label className="session-count">Study {4-countStudySessions.current} more sessions to allow 10 minute rest option</label>}
         </div>
     );
 }
