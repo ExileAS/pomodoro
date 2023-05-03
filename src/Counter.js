@@ -4,25 +4,26 @@ import workSound from './mixkit-doorbell-tone-2864.wav';
 
 export const Counter = () => {
     const [started, setStarted] = useState(false);
-    const [seconds, setSeconds] = useState(0);
-    const [minutes, setMinutes] = useState(25);
-    const countSessions = useRef(0);
-    const secondCounter = useRef(seconds);
-    const minuteCounter = useRef(minutes);
+    const countStudySessions = useRef(0);
+    const countRestSessions = useRef(0);
+    const secondCounter = useRef(0);
+    const minuteCounter = useRef(25);
+    const [seconds, setSeconds] = useState(secondCounter.current);
+    const [minutes, setMinutes] = useState(minuteCounter.current);
+    const [moreRestEnable, setMoreRestEnable] = useState(false);
     const interval = useRef(null);
     const restTimeRef = useRef(null);
-    const [remainingSessions, setRemainingSessions] = useState(4);
-
-    const [paused, setPaused] = useState(false);
-    const pausedRef = useRef(paused);
+    const studyTimeRef = useRef(null);
+    const paused = useRef(false);
 
     useEffect(() => {
             function countDown() {
                 interval.current = setInterval(() => {
-                    if(pausedRef.current === true) {
+                    if(paused.current === true) {
                         setStarted(false);
-                        pausedRef.current = paused;
+                        paused.current = false;
                         clearInterval(interval.current);
+                        return;
                     }
                     if(secondCounter.current === 0) {
                         secondCounter.current = 59;
@@ -35,41 +36,43 @@ export const Counter = () => {
                         setSeconds(secondCounter.current);
                     }
                     if(secondCounter.current === 0 && minuteCounter.current === 0) {
+                        countStudySessions.current > countRestSessions.current ? countRestSessions.current++ : countStudySessions.current++;
                         playSound();
-                        countSessions.current++;
-                        if(countSessions.current % 8 === 0 && countSessions.current > 0) {
-                            countSessions.current = 0;
+                        if(countStudySessions.current === 4) {
+                            setMoreRestEnable(true);
+                            countStudySessions.current = 0;
                         }
-                        secondCounter.current = 0;
-                        minuteCounter.current = restTimeRef.current.value;
-                        setSeconds(secondCounter.current);
-                        setMinutes(minuteCounter.current);
-                        pausedRef.current = true;
-                        setPaused(pausedRef.current);
+                        if(countRestSessions.current === 4) countRestSessions.current = 0;
+                            secondCounter.current = 0;
+                            minuteCounter.current = countStudySessions.current > countRestSessions.current ? restTimeRef.current.value : studyTimeRef.current.value;
+                            setSeconds(secondCounter.current);
+                            setMinutes(minuteCounter.current);
+                            paused.current = true;
                     }
-
                 }, 1000);
             }
 
 
-            if(started && !paused) {
+            if(started) {
                 countDown();
             }
-        //return () => clearInterval(interval.current);
-    },[started, paused])
+        
+    },[started])
 
 
     const handleChangeTime = (e) => {
-        minuteCounter.current = e.target.value
-        setMinutes(minuteCounter.current)
+        minuteCounter.current = e.target.value;
+        setMinutes(minuteCounter.current);
         secondCounter.current = 0;
-        setSeconds(secondCounter.current)
+        setSeconds(secondCounter.current);
     }
 
 
     const handleReset = () => {
         minuteCounter.current = 25;
         secondCounter.current = 0;
+        countRestSessions.current = 0;
+        countStudySessions.current = 0;
         setMinutes(minuteCounter.current);
         setSeconds(secondCounter.current);
         clearInterval(interval.current);
@@ -83,19 +86,16 @@ export const Counter = () => {
        </option> 
     ))
 
+
     const playSound = () => {
         const audio1 = new Audio(successSound);
         const audio2 = new Audio(workSound);
-        countSessions.current % 2 === 0 ? audio2.play() : audio1.play();
+        countStudySessions.current > countRestSessions.current ? audio1.play() : audio2.play();
     }
 
-    useEffect(() => {
-        if(countSessions.current % 2 !== 0) {
-            setRemainingSessions(prev => prev - 1)
-        }
-        if(countSessions.current === 0) setRemainingSessions(4);
-    },[countSessions.current])
 
+    const disableStudyOptions = started || countStudySessions.current > countRestSessions.current;
+    const disableRestOptions = started || (countRestSessions.current === countStudySessions.current && countStudySessions.current !== 0);
 
     return ( 
         <div>
@@ -103,31 +103,36 @@ export const Counter = () => {
         <button 
             disabled = {started}
             onClick={() => {
-            setStarted(true)
-            setPaused(false)
+            setStarted(true);
+            paused.current = false;
             }} 
             className="start-button"
         >
         Start</button>
-        <button disabled={!started} onClick={() => pausedRef.current = true} className="pause-button">Pause</button>
+
+        <button disabled={!started} onClick={() => paused.current = true} className="pause-button">Pause</button>
+
         <button className="reset-button" onClick={handleReset}>Reset</button>
+
         <br />
         <label className="study-label">Choose study time</label>
-        <select disabled = {started} onChange={handleChangeTime}>
+        <select disabled = {disableStudyOptions} onChange={handleChangeTime} ref={studyTimeRef}>
             {timeOptions}
         </select>
+
         <br />
         <label className="rest-label">Choose Rest Time</label>
         <select onChange={(e) => {
             setMinutes(e.target.value)
             setSeconds(0);
             }} 
-            ref={restTimeRef} disabled={started}>
+            ref={restTimeRef} disabled={disableRestOptions}>
             <option value={5} key={5}>5</option>
-            <option disabled={!(countSessions.current === 7 && countSessions.current > 0)} value={10} key={10}>10</option>
+            <option disabled={!moreRestEnable} value={10} key={10}>10</option>
         </select>
+
         <br />
-        <label className="session-count">Study {remainingSessions} more sessions to allow 10 minute rest option</label>
+        {moreRestEnable ? <label className="more-rest">you can Choose 10 minute option now</label> : <label className="session-count">Study {4-countStudySessions.current} more sessions to allow 10 minute rest option</label>}
         </div>
     );
 }
