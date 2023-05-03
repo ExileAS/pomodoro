@@ -68,11 +68,28 @@ export const Counter = () => {
     }
 
 
+    const handleResetTimer = () => {
+        paused.current = true;
+        if(countStudySessions.current === countRestSessions.current) {
+            minuteCounter.current = studyTimeRef.current.value;
+            setMinutes(minuteCounter.current);
+            secondCounter.current = 0;
+            setSeconds(secondCounter.current);
+        } else {
+            minuteCounter.current = restTimeRef.current.value;
+            setMinutes(restTimeRef);
+            secondCounter.current = 0;
+            setSeconds(secondCounter.current);
+        }
+    }
+
+
     const handleReset = () => {
         minuteCounter.current = 25;
         secondCounter.current = 0;
         countRestSessions.current = 0;
         countStudySessions.current = 0;
+        setMoreRestEnable(false);
         setMinutes(minuteCounter.current);
         setSeconds(secondCounter.current);
         clearInterval(interval.current);
@@ -97,9 +114,12 @@ export const Counter = () => {
     const disableStudyOptions = started || countStudySessions.current > countRestSessions.current;
     const disableRestOptions = started || (countRestSessions.current === countStudySessions.current && countStudySessions.current !== 0);
 
+    console.log(restTimeRef.current, studyTimeRef.current)
+
     return ( 
         <div>
         <span className="timer">{minutes} : {seconds >= 10 ? seconds : '0' + seconds}</span>
+        <br />
         <button 
             disabled = {started}
             onClick={() => {
@@ -111,8 +131,8 @@ export const Counter = () => {
         Start</button>
 
         <button disabled={!started} onClick={() => paused.current = true} className="pause-button">Pause</button>
-
-        <button className="reset-button" onClick={handleReset}>Reset</button>
+        <button onClick={handleResetTimer} className="reset-timer">Reset timer</button>
+        
 
         <br />
         <label className="study-label">Choose study time</label>
@@ -133,6 +153,9 @@ export const Counter = () => {
 
         <br />
         {moreRestEnable ? <label className="more-rest">you can Choose 10 minute option now</label> : <label className="session-count">Study {4-countStudySessions.current} more sessions to allow 10 minute rest option</label>}
+        <br />
+        <button className="reset-button" onClick={handleReset}>Reset Sessions</button>
         </div>
+        
     );
 }

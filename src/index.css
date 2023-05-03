@@ -87,12 +87,15 @@ body {
 
 .reset-button {
   background-color: cyan;
-  margin: 3px;
+  margin: 12px;
+  margin-left: 12px;
   font-size: large;
   background-size: contain;
   align-items: center;
   color: blue;
   font-family: Arial, Helvetica, sans-serif;
+  border-radius: 20px;
+  padding: 5px;
 }
 
 .rest-label {
@@ -109,4 +112,9 @@ body {
 
 .more-rest {
   color: black;
+}
+
+.reset-timer {
+  background-color: darkred;
+  font-size: large;
 }
