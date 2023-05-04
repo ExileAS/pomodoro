@@ -103,7 +103,8 @@ body {
 }
 
 .session-count {
-  color:darkblue;
+  color:rgb(0, 0, 83);
+  font-style:inherit;
 }
 
 .study-label {

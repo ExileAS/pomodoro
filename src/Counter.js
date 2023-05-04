@@ -138,7 +138,7 @@ export const Counter = () => {
         
 
         <br />
-        <label className="study-label">Choose study time</label>
+        <label className="study-label">Choose Study Time</label>
         <select disabled = {disableStudyOptions} onChange={handleChangeTime} ref={studyTimeRef}>
             {timeOptions}
         </select>
