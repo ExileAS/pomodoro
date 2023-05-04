@@ -117,8 +117,6 @@ export const Counter = () => {
     const disableStudyOptions = started || countStudySessions.current > countRestSessions.current;
     const disableRestOptions = started || (countRestSessions.current === countStudySessions.current && countStudySessions.current !== 0);
 
-    console.log(restTimeRef.current, studyTimeRef.current)
-
     return ( 
         <div>
         <span className="timer">{minutes} : {seconds >= 10 ? seconds : '0' + seconds}</span>
