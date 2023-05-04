@@ -42,7 +42,10 @@ export const Counter = () => {
                             setMoreRestEnable(true);
                             countStudySessions.current = 0;
                         }
-                        if(countRestSessions.current === 4) countRestSessions.current = 0;
+                        if(countRestSessions.current === 4) {
+                            setMoreRestEnable(false);
+                            countRestSessions.current = 0;
+                        }
                             secondCounter.current = 0;
                             minuteCounter.current = countStudySessions.current > countRestSessions.current ? restTimeRef.current.value : studyTimeRef.current.value;
                             setSeconds(secondCounter.current);
